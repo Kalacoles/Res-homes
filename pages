@@ -1,1 +1,22 @@
 pages/index.js
+import dynamic from "next/dynamic";
+import { useEffect, useState } from "react";
+
+const HomesMap = dynamic(() => import("../components/HomesMap"), { ssr: false });
+
+export default function Home() {
+  const [homes, setHomes] = useState([]);
+
+  useEffect(() => {
+    fetch("/homes.json")
+      .then(res => res.json())
+      .then(setHomes);
+  }, []);
+
+  return (
+    <div>
+      <h1>Residential Homes Map</h1>
+      <HomesMap homes={homes} />
+    </div>
+  );
+}
