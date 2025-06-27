@@ -1,0 +1,58 @@
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+
+// Fix Leaflet's default icon path for Next.js/Vercel
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: "https://unpkg.com/leaflet/dist/images/marker-icon-2x.png",
+  iconUrl: "https://unpkg.com/leaflet/dist/images/marker-icon.png",
+  shadowUrl: "https://unpkg.com/leaflet/dist/images/marker-shadow.png"
+});
+
+export default function HomesMap({ homes }) {
+  if (!homes || homes.length === 0) return <p>Loading map...</p>;
+  const center = homes[0]?.location || { lat: 51.5074, lng: -0.1278 };
+
+  return (
+    <MapContainer center={center} zoom={6} style={{ height: "80vh", width: "100%" }}>
+      <TileLayer
+        attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a>'
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+      />
+      {homes.map((home, idx) => (
+        <Marker
+          key={idx}
+          position={home.location}
+          eventHandlers={{
+            add: (e) => {
+              setTimeout(() => {
+                e.target._icon.classList.add("bounce");
+              }, 100 * idx);
+            }
+          }}
+        >
+          <Popup>
+            <b>{home.name}</b>
+            <br />
+            <b>Manager:</b> {home.manager}
+            <br />
+            <b>Ofsted Registered:</b> {home.ofsted_registered ? "Yes" : "No"}
+            <br />
+            <b>Rating:</b> {home.rating}
+          </Popup>
+        </Marker>
+      ))}
+      <style jsx global>{`
+        .leaflet-marker-icon.bounce {
+          animation: bounce 0.5s;
+        }
+        @keyframes bounce {
+          0% { transform: translateY(-20px); }
+          50% { transform: translateY(0); }
+          100% { transform: translateY(-10px); }
+        }
+      `}</style>
+    </MapContainer>
+  );
+}
